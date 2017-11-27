@@ -6,7 +6,7 @@ NUM_WORKERS = 4
 LR = 0.001
 MOMENTUM = 0.5
 EPOCH = 10
-DUMPED_MODEL = "model_1_450.pth.tar"
+DUMPED_MODEL = "saved_model_filename"
 
 LOG_INTERVAL = 10
 DUMP_INTERVAL = 500

@@ -7,9 +7,10 @@ import random
 
 
 class Fashion(data.Dataset):
-    def __init__(self, train=True, transform=None, target_transform=None):
+    def __init__(self, train=True, transform=None, target_transform=None, crop=False):
         self.transform = transform
         self.target_transform = target_transform
+        self.crop = crop
         self.train = train
         self.train_list = []
         self.test_list = []
@@ -61,7 +62,7 @@ class Fashion(data.Dataset):
         with open(img_full_path, 'rb') as f:
             with Image.open(f) as img:
                 img = img.convert('RGB')
-        if x1 < x2 <= img.size[0] and y1 < y2 <= img.size[1]:
+        if self.crop and x1 < x2 <= img.size[0] and y1 < y2 <= img.size[1]:
             img = img.crop((x1, y1, x2, y2))
         return img
 

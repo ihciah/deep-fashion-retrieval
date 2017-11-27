@@ -8,4 +8,5 @@ A simple image retrieval on deep-fashion dataset with pytorch
 
 ### Training
 1. Download dataset from [DeepFashion: Attribute Prediction](http://mmlab.ie.cuhk.edu.hk/projects/DeepFashion/AttributePrediction.html)
-2. Unzip all files and set `DATASET_BASE` in config.py
+2. Unzip all files and set `DATASET_BASE` in `config.py`
+3. Run `train.py`
