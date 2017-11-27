@@ -7,20 +7,24 @@ import random
 
 
 class Fashion(data.Dataset):
-    def __init__(self, train=True, transform=None, target_transform=None, crop=False):
+    def __init__(self, train=True, image_only=False, transform=None, target_transform=None, crop=False):
         self.transform = transform
         self.target_transform = target_transform
         self.crop = crop
         self.train = train
+        self.image_only = image_only
         self.train_list = []
         self.test_list = []
+        self.all_list = []
         self.bbox = dict()
         self.anno = dict()
         self.read_partition_category()
         self.read_bbox()
 
     def __len__(self):
-        if self.train:
+        if self.image_only:
+            return len(self.all_list)
+        elif self.train:
             return len(self.train_list)
         return len(self.test_list)
 
@@ -40,8 +44,10 @@ class Fashion(data.Dataset):
                 else:
                     # Test and Val
                     self.test_list.append(k)
+        self.all_list = self.test_list + self.train_list
         random.shuffle(self.train_list)
         random.shuffle(self.test_list)
+        random.shuffle(self.all_list)
 
     def read_bbox(self):
         list_bbox = os.path.join(DATASET_BASE, r'Anno', r'list_bbox.txt')
@@ -67,7 +73,9 @@ class Fashion(data.Dataset):
         return img
 
     def __getitem__(self, index):
-        if self.train:
+        if self.image_only:
+            img_path = self.all_list[index]
+        elif self.train:
             img_path = self.train_list[index]
         else:
             img_path = self.test_list[index]
@@ -78,5 +86,6 @@ class Fashion(data.Dataset):
             img = self.transform(img)
         if self.target_transform is not None:
             target = self.target_transform(target)
-
+        if self.image_only:
+            return img, img_path
         return img, target

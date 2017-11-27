@@ -3,6 +3,7 @@
 from config import *
 import os
 import torch
+import numpy as np
 
 
 def dump_model(model, epoch, batch_idx="final"):
@@ -23,3 +24,11 @@ def load_model(path=None):
             return torch.load(i)
     return None
 
+
+def dump_feature(feat, img_path):
+    feat_folder = os.path.join(DATASET_BASE, 'features')
+    if not os.path.isdir(feat_folder):
+        os.mkdir(feat_folder)
+    np_path = img_path.replace("/", "+")
+    np_path = os.path.join(feat_folder, np_path)
+    np.save(np_path, feat)
