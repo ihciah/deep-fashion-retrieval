@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
-from torch.autograd import Variable
-from torchvision import models
-from torchvision import transforms
-from PIL import Image
-import argparse
-import torch
+
 import torchvision
 import torch.nn as nn
-import numpy as np
-import os
 from config import *
+from utils import *
 
 
-def gen_model():
+def gen_model(freeze_param=False, model_path=None):
     model_conv = torchvision.models.resnet50(pretrained=True)
-    # for param in model_conv.parameters():
-    #     param.requires_grad = False
-
+    if freeze_param:
+        for param in model_conv.parameters():
+            param.requires_grad = False
     num_ftrs = model_conv.fc.in_features
     model_conv.fc = nn.Linear(num_ftrs, CATEGORIES)
+    state = load_model(model_path)
+    if state:
+        model_conv.load_state_dict(state)
     return model_conv
 

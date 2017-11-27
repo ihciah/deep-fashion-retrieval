@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import torch.utils.data as data
-import torch
 from config import *
 import os
 from PIL import Image
@@ -64,7 +63,6 @@ class Fashion(data.Dataset):
                 img = img.convert('RGB')
         if x1 < x2 <= img.size[0] and y1 < y2 <= img.size[1]:
             img = img.crop((x1, y1, x2, y2))
-        # img = cv2.resize(img, IMG_SIZE)
         return img
 
     def __getitem__(self, index):
