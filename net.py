@@ -12,10 +12,12 @@ import os
 from config import *
 
 
-model_conv = torchvision.models.resnet50(pretrained=True)
-for param in model_conv.parameters():
-    param.requires_grad = False
+def gen_model():
+    model_conv = torchvision.models.resnet50(pretrained=True)
+    # for param in model_conv.parameters():
+    #     param.requires_grad = False
 
-num_ftrs = model_conv.fc.in_features
-model_conv.fc = nn.Linear(num_ftrs, CATEGORIES)
-model_conv = model_conv.cuda(GPU_ID)
+    num_ftrs = model_conv.fc.in_features
+    model_conv.fc = nn.Linear(num_ftrs, CATEGORIES)
+    return model_conv
+

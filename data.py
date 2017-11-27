@@ -3,7 +3,7 @@ import torch.utils.data as data
 import torch
 from config import *
 import os
-import cv2
+from PIL import Image
 import random
 
 
@@ -59,10 +59,12 @@ class Fashion(data.Dataset):
     def read_crop(self, img_path):
         x1, y1, x2, y2 = self.bbox[img_path]
         img_full_path = os.path.join(DATASET_BASE, img_path)
-        img = cv2.imread(img_full_path)
-        if x1 < x2 <= img.shape[0] and y1 < y2 <= img.shape[1]:
-            img = img[x1: x2, y1: y2, :]
-        img = cv2.resize(img, IMG_SIZE)
+        with open(img_full_path, 'rb') as f:
+            with Image.open(f) as img:
+                img = img.convert('RGB')
+        if x1 < x2 <= img.size[0] and y1 < y2 <= img.size[1]:
+            img = img.crop((x1, y1, x2, y2))
+        # img = cv2.resize(img, IMG_SIZE)
         return img
 
     def __getitem__(self, index):

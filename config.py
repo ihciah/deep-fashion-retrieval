@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 
 GPU_ID = 0
-CATEGORIES = 20
+BATCH_SIZE = 32
+NUM_WORKERS = 4
+LR = 0.001
+MOMENTUM = 0.5
+LOG_INTERVAL = 1
+EPOCH = 1000
 
 
 DATASET_BASE = r'/DATACETNER/1/ch/deepfashion_data'
 IMG_SIZE = (128, 128)
+CATEGORIES = 20
