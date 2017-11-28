@@ -4,23 +4,28 @@ import torchvision
 import torch.nn as nn
 from config import *
 from utils import *
+from torch.autograd import Variable
 
 
-def gen_model(freeze_param=False, model_path=None):
-    model_conv = torchvision.models.resnet50(pretrained=True)
-    if freeze_param:
-        for param in model_conv.parameters():
-            param.requires_grad = False
-    num_ftrs = model_conv.fc.in_features
-    model_conv.fc = nn.Linear(num_ftrs, INTER_DIM)
-    model_conv.add_module('fc2', nn.Linear(INTER_DIM, CATEGORIES))
-    if TRIPLET_WEIGHT:
-        # Create a buffer to store feature
-        model_conv.fc.register_buffer("feature", torch.zeros(INTER_DIM))
-        # On every forward, copy feature to buffer
-        model_conv.fc.register_forward_hook(lambda m, i, o: m.feature.copy_(o.data.squeeze()))
-    state = load_model(model_path)
-    if state:
-        model_conv.load_state_dict(state)
-    return model_conv
+class f_model(nn.Module):
+    def __init__(self, freeze_param=False, inter_dim=INTER_DIM, num_classes=CATEGORIES, model_path=None):
+        super(f_model, self).__init__()
+        self.backbone = torchvision.models.resnet50(pretrained=True)
+        if freeze_param:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
+        num_features = self.backbone.fc.in_features
+        self.backbone.fc = nn.Linear(num_features, inter_dim)
+        self.fc2 = nn.Linear(inter_dim, num_classes)
+        state = load_model(model_path)
+        if state:
+            self.load_state_dict(state)
 
+    def forward(self, x):
+        inter_out = self.backbone(x)
+        out = self.fc2(inter_out)
+        return out, inter_out
+
+if __name__ == "__main__":
+    model = f_model()
+    print(1)

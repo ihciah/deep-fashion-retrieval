@@ -3,11 +3,11 @@
 import os
 from config import *
 from utils import *
-from net import gen_model
 from torchvision import transforms
 from torch.autograd import Variable
 import torch.nn as nn
 from data import Fashion
+from net import f_model
 
 
 class FeatureExtractor(nn.Module):
@@ -19,7 +19,8 @@ class FeatureExtractor(nn.Module):
         for name, module in self.submodule._modules.items()[:-1]:
             x = module(x)
         return x
-model = gen_model(model_path=DUMPED_MODEL).cuda(GPU_ID)
+model = f_model(model_path=DUMPED_MODEL).cuda(GPU_ID)
+model.eval()
 extractor = FeatureExtractor(model)
 
 data_transform_test = transforms.Compose([

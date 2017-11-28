@@ -14,6 +14,7 @@ class Fashion(data.Dataset):
         # type_all = ["train", "test", "all", "triplet"]
         self.type = type
         self.train_list = []
+        self.train_dict = {i: [] for i in range(CATEGORIES)}
         self.test_list = []
         self.all_list = []
         self.bbox = dict()
@@ -41,6 +42,7 @@ class Fashion(data.Dataset):
             if k in self.anno:
                 if v == "train":
                     self.train_list.append(k)
+                    self.train_dict[self.anno[k]].append(k)
                 else:
                     # Test and Val
                     self.test_list.append(k)
@@ -73,9 +75,23 @@ class Fashion(data.Dataset):
         return img
 
     def __getitem__(self, index):
+        if self.type == "triplet":
+            img_path = self.train_list[index]
+            target = self.anno[img_path]
+            img_p = random.choice(self.train_dict[target])
+            img_n = random.choice(self.train_dict[random.choice(list(filter(lambda x: x != target, range(20))))])
+            img = self.read_crop(img_path)
+            img_p = self.read_crop(img_p)
+            img_n = self.read_crop(img_n)
+            if self.transform is not None:
+                img = self.transform(img)
+                img_p = self.transform(img_p)
+                img_n = self.transform(img_n)
+            return img, img_p, img_n
+
         if self.type == "all":
             img_path = self.all_list[index]
-        elif self.type in ["train", "triplet"]:
+        elif self.type == "train":
             img_path = self.train_list[index]
         else:
             img_path = self.test_list[index]
@@ -86,6 +102,5 @@ class Fashion(data.Dataset):
             img = self.transform(img)
         if self.target_transform is not None:
             target = self.target_transform(target)
-        if self.type == "all":
-            return img, img_path
-        return img, target
+
+        return img, img_path if self.type == "all" else target

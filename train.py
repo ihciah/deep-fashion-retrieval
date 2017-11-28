@@ -9,7 +9,7 @@ from torch.autograd import Variable
 from config import *
 from utils import *
 from data import Fashion
-from net import gen_model
+from net import f_model
 
 
 data_transform_train = transforms.Compose([
@@ -38,7 +38,12 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=TEST_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
 )
 
-model = gen_model(freeze_param=FREEZE_PARAM, model_path=DUMPED_MODEL).cuda(GPU_ID)
+triplet_loader = torch.utils.data.DataLoader(
+    Fashion(type="triplet", transform=data_transform_train),
+    batch_size=TRIPLET_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
+)
+
+model = f_model(freeze_param=FREEZE_PARAM, model_path=DUMPED_MODEL).cuda(GPU_ID)
 optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=LR, momentum=MOMENTUM)
 
 
@@ -46,20 +51,42 @@ def train(epoch):
     model.train()
     criterion_c = nn.CrossEntropyLoss()
     criterion_t = nn.TripletMarginLoss()
+    triplet_loader_iter = iter(triplet_loader)
     for batch_idx, (data, target) in enumerate(train_loader):
         if batch_idx % TEST_INTERVAL == 0:
             test()
         data, target = data.cuda(), target.cuda()
         data, target = Variable(data), Variable(target)
         optimizer.zero_grad()
-        outputs = model(data)
-        loss = criterion_c(outputs, target)
+        outputs = model(data)[0]
+        classification_loss = criterion_c(outputs, target)
+        if TRIPLET_WEIGHT:
+            data_tri_list = triplet_loader_iter.next()
+            data_tri = torch.cat(data_tri_list, 0)
+            data_tri = data_tri.cuda()
+            data_tri = Variable(data_tri)
+            feats = model(data_tri)[1]
+            triplet_loss = criterion_t(
+                feats[:TRIPLET_BATCH_SIZE],
+                feats[TRIPLET_BATCH_SIZE:2 * TRIPLET_BATCH_SIZE],
+                feats[2 * TRIPLET_BATCH_SIZE:]
+            )
+            loss = classification_loss + triplet_loss * TRIPLET_WEIGHT
+        else:
+            loss = classification_loss
         loss.backward()
         optimizer.step()
         if batch_idx % LOG_INTERVAL == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.data[0]))
+            if TRIPLET_WEIGHT:
+                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tAll Loss: {:.4f}\t'
+                      'Triple Loss: {:.4f}\tClassification Loss: {:.4f}'.format(
+                    epoch, batch_idx * len(data), len(train_loader.dataset),
+                    100. * batch_idx / len(train_loader), loss.data[0],
+                    triplet_loss.data[0], classification_loss.data[0]))
+            else:
+                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tClassification Loss: {:.4f}'.format(
+                    epoch, batch_idx * len(data), len(train_loader.dataset),
+                           100. * batch_idx / len(train_loader), loss.data[0]))
         if batch_idx and batch_idx % DUMP_INTERVAL == 0:
             print('Model saved to {}'.format(dump_model(model, epoch, batch_idx)))
 
@@ -74,7 +101,7 @@ def test():
     for batch_idx, (data, target) in enumerate(test_loader):
         data, target = data.cuda(), target.cuda()
         data, target = Variable(data, volatile=True), Variable(target)
-        output = model(data)
+        output = model(data)[0]
         test_loss += criterion(output, target).data[0]
         pred = output.data.max(1, keepdim=True)[1]
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
