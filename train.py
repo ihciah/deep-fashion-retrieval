@@ -29,22 +29,23 @@ data_transform_test = transforms.Compose([
 
 
 train_loader = torch.utils.data.DataLoader(
-    Fashion(train=True, transform=data_transform_train),
+    Fashion(type="train", transform=data_transform_train),
     batch_size=TRAIN_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
 )
 
 test_loader = torch.utils.data.DataLoader(
-    Fashion(train=False, transform=data_transform_test),
+    Fashion(type="test", transform=data_transform_test),
     batch_size=TEST_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
 )
 
-model = gen_model(freeze_param=True, model_path=DUMPED_MODEL).cuda(GPU_ID)
+model = gen_model(freeze_param=FREEZE_PARAM, model_path=DUMPED_MODEL).cuda(GPU_ID)
 optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=LR, momentum=MOMENTUM)
 
 
 def train(epoch):
     model.train()
-    criterion = nn.CrossEntropyLoss()
+    criterion_c = nn.CrossEntropyLoss()
+    criterion_t = nn.TripletMarginLoss()
     for batch_idx, (data, target) in enumerate(train_loader):
         if batch_idx % TEST_INTERVAL == 0:
             test()
@@ -52,7 +53,7 @@ def train(epoch):
         data, target = Variable(data), Variable(target)
         optimizer.zero_grad()
         outputs = model(data)
-        loss = criterion(outputs, target)
+        loss = criterion_c(outputs, target)
         loss.backward()
         optimizer.step()
         if batch_idx % LOG_INTERVAL == 0:

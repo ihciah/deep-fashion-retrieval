@@ -7,12 +7,12 @@ import random
 
 
 class Fashion(data.Dataset):
-    def __init__(self, train=True, image_only=False, transform=None, target_transform=None, crop=False):
+    def __init__(self, type="train", transform=None, target_transform=None, crop=False):
         self.transform = transform
         self.target_transform = target_transform
         self.crop = crop
-        self.train = train
-        self.image_only = image_only
+        # type_all = ["train", "test", "all", "triplet"]
+        self.type = type
         self.train_list = []
         self.test_list = []
         self.all_list = []
@@ -22,9 +22,9 @@ class Fashion(data.Dataset):
         self.read_bbox()
 
     def __len__(self):
-        if self.image_only:
+        if self.type == "all":
             return len(self.all_list)
-        elif self.train:
+        elif self.type == "train":
             return len(self.train_list)
         return len(self.test_list)
 
@@ -73,9 +73,9 @@ class Fashion(data.Dataset):
         return img
 
     def __getitem__(self, index):
-        if self.image_only:
+        if self.type == "all":
             img_path = self.all_list[index]
-        elif self.train:
+        elif self.type in ["train", "triplet"]:
             img_path = self.train_list[index]
         else:
             img_path = self.test_list[index]
@@ -86,6 +86,6 @@ class Fashion(data.Dataset):
             img = self.transform(img)
         if self.target_transform is not None:
             target = self.target_transform(target)
-        if self.image_only:
+        if self.type == "all":
             return img, img_path
         return img, target

@@ -31,7 +31,7 @@ data_transform_test = transforms.Compose([
 
 
 test_loader = torch.utils.data.DataLoader(
-    Fashion(image_only=True, transform=data_transform_test),
+    Fashion(type="all", transform=data_transform_test),
     batch_size=TEST_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
 )
 
