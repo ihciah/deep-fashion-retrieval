@@ -55,7 +55,7 @@ def train(epoch):
     for batch_idx, (data, target) in enumerate(train_loader):
         if batch_idx % TEST_INTERVAL == 0:
             test()
-        data, target = data.cuda(), target.cuda()
+        data, target = data.cuda(GPU_ID), target.cuda(GPU_ID)
         data, target = Variable(data), Variable(target)
         optimizer.zero_grad()
         outputs = model(data)[0]
@@ -67,7 +67,7 @@ def train(epoch):
                 triplet_loader_iter = iter(triplet_loader)
             triplet_batch_size = data_tri_list[0].shape[0]
             data_tri = torch.cat(data_tri_list, 0)
-            data_tri = data_tri.cuda()
+            data_tri = data_tri.cuda(GPU_ID)
             data_tri = Variable(data_tri)
             feats = model(data_tri)[1]
             triplet_loss = criterion_t(
@@ -103,7 +103,7 @@ def test():
     test_loss = 0
     correct = 0
     for batch_idx, (data, target) in enumerate(test_loader):
-        data, target = data.cuda(), target.cuda()
+        data, target = data.cuda(GPU_ID), target.cuda(GPU_ID)
         data, target = Variable(data, volatile=True), Variable(target)
         output = model(data)[0]
         test_loss += criterion(output, target).data[0]

@@ -37,8 +37,7 @@ def dump_feature(feat, img_path):
 def load_feature(img_path):
     feat_folder = os.path.join(DATASET_BASE, 'features')
     np_path = img_path.replace("/", "+")
-    np_path = os.path.join(feat_folder, np_path)
-    print(np_path)
+    np_path = os.path.join(feat_folder, np_path + '.npy')
     if os.path.isfile(np_path):
         feat = np.load(np_path)
         return feat
