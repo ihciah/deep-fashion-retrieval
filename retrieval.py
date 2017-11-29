@@ -11,6 +11,7 @@ from net import f_model
 import time
 
 
+@timer_with_task("Loading model")
 def load_test_model():
     if not os.path.isfile(DUMPED_MODEL) and not os.path.isfile(os.path.join(DATASET_BASE, "models", DUMPED_MODEL)):
         print("No trained model file!")
@@ -21,6 +22,7 @@ def load_test_model():
     return extractor
 
 
+@timer_with_task("Loading feature database")
 def load_feat_db():
     feat_all = os.path.join(DATASET_BASE, 'all_feat.npy')
     feat_list = os.path.join(DATASET_BASE, 'all_feat.list')
@@ -41,6 +43,7 @@ def read_lines(path):
     return names
 
 
+@timer_with_task("Doing query")
 def naive_query(feature, feats, labels, retrieval_top_n=5):
     if feature is None:
         print("Input feature is None")
@@ -50,6 +53,7 @@ def naive_query(feature, feats, labels, retrieval_top_n=5):
     return zip([labels[i] for i in ind], dist[ind])
 
 
+@timer_with_task("Extracting image feature")
 def dump_single_feature(img_path, extractor):
     paths = [img_path, os.path.join(DATASET_BASE, img_path)]
     for i in paths:
@@ -86,29 +90,11 @@ if __name__ == "__main__":
     example = "img/Sheer_Pleated-Front_Blouse/img_00000005.jpg"
     if len(sys.argv) > 1 and sys.argv[1].endswith("jpg"):
         example = sys.argv[1]
-    print("Loading model...")
-    tic = time.time()
+
     extractor = load_test_model()
-    toc = time.time()
-    print("Model loaded. (Time: {:.3f} second)".format(toc - tic))
-
-    print("Loading features...")
-    tic = time.time()
     feats, labels = load_feat_db()
-    toc = time.time()
-    print("{} feature db loaded. (Time: {:.3f} second)".format(len(labels), (toc - tic)))
-
-    print("Extracting image feature...")
-    tic = time.time()
     f = dump_single_feature("img/Sheer_Pleated-Front_Blouse/img_00000005.jpg", extractor)
-    toc = time.time()
-    print("Feature extracted. (Time: {:.3f} second)".format(toc - tic))
-
-    print("Doing query...")
-    tic = time.time()
     result = naive_query(f, feats, labels, 5)
-    toc = time.time()
-    print("Query done. (Time: {:.3f} second)".format(toc - tic))
 
     print(result)
     visualize(example, result)

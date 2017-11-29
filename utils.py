@@ -2,6 +2,7 @@
 
 from config import *
 import os
+import time
 import torch
 import numpy as np
 import torch.nn as nn
@@ -53,6 +54,7 @@ data_transform_test = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
 
+
 class FeatureExtractor(nn.Module):
     def __init__(self, submodule):
         super(FeatureExtractor, self).__init__()
@@ -62,3 +64,16 @@ class FeatureExtractor(nn.Module):
         for name, module in self.submodule._modules.items()[:-1]:
             x = module(x)
         return x
+
+
+def timer_with_task(job=""):
+    def timer(fn):
+        def wrapped(*args, **kw):
+            print("{}".format(job + "..."))
+            tic = time.time()
+            ret = fn(*args, **kw)
+            toc = time.time()
+            print("{} Done. Time: {:.3f} sec".format(job, (toc - tic)))
+            return ret
+        return wrapped
+    return timer
