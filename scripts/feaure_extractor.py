@@ -3,32 +3,14 @@
 import os
 from config import *
 from utils import *
-from torchvision import transforms
 from torch.autograd import Variable
-import torch.nn as nn
 from data import Fashion
 from net import f_model
 
 
-class FeatureExtractor(nn.Module):
-    def __init__(self, submodule):
-        super(FeatureExtractor, self).__init__()
-        self.submodule = submodule
-
-    def forward(self, x):
-        for name, module in self.submodule._modules.items()[:-1]:
-            x = module(x)
-        return x
 model = f_model(model_path=DUMPED_MODEL).cuda(GPU_ID)
 model.eval()
 extractor = FeatureExtractor(model)
-
-data_transform_test = transforms.Compose([
-    transforms.Scale(CROP_SIZE),
-    transforms.CenterCrop(CROP_SIZE),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
 
 
 all_loader = torch.utils.data.DataLoader(

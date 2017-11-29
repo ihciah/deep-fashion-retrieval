@@ -7,12 +7,15 @@ import random
 
 
 class Fashion(data.Dataset):
-    def __init__(self, type="train", transform=None, target_transform=None, crop=False):
+    def __init__(self, type="train", transform=None, target_transform=None, crop=False, img_path=None):
         self.transform = transform
         self.target_transform = target_transform
         self.crop = crop
-        # type_all = ["train", "test", "all", "triplet"]
+        # type_all = ["train", "test", "all", "triplet", "single"]
         self.type = type
+        if type == "single":
+            self.img_path = img_path
+            return
         self.train_list = []
         self.train_dict = {i: [] for i in range(CATEGORIES)}
         self.test_list = []
@@ -27,7 +30,10 @@ class Fashion(data.Dataset):
             return len(self.all_list)
         elif self.type == "train":
             return len(self.train_list)
-        return len(self.test_list)
+        elif self.type == "test":
+            return len(self.test_list)
+        else:
+            return 1
 
     def read_partition_category(self):
         list_eval_partition = os.path.join(DATASET_BASE, r'Eval', r'list_eval_partition.txt')
@@ -65,13 +71,14 @@ class Fashion(data.Dataset):
         return pairs
 
     def read_crop(self, img_path):
-        x1, y1, x2, y2 = self.bbox[img_path]
         img_full_path = os.path.join(DATASET_BASE, img_path)
         with open(img_full_path, 'rb') as f:
             with Image.open(f) as img:
                 img = img.convert('RGB')
-        if self.crop and x1 < x2 <= img.size[0] and y1 < y2 <= img.size[1]:
-            img = img.crop((x1, y1, x2, y2))
+        if self.crop:
+            x1, y1, x2, y2 = self.bbox[img_path]
+            if x1 < x2 <= img.size[0] and y1 < y2 <= img.size[1]:
+                img = img.crop((x1, y1, x2, y2))
         return img
 
     def __getitem__(self, index):
@@ -88,6 +95,13 @@ class Fashion(data.Dataset):
                 img_p = self.transform(img_p)
                 img_n = self.transform(img_n)
             return img, img_p, img_n
+
+        if self.type == "single":
+            img_path = self.img_path
+            img = self.read_crop(img_path)
+            if self.transform is not None:
+                img = self.transform(img)
+            return img
 
         if self.type == "all":
             img_path = self.all_list[index]

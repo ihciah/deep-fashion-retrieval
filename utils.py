@@ -4,6 +4,8 @@ from config import *
 import os
 import torch
 import numpy as np
+import torch.nn as nn
+from torchvision import transforms
 
 
 def dump_model(model, epoch, batch_idx="final"):
@@ -44,3 +46,19 @@ def load_feature(img_path):
     else:
         return None
 
+data_transform_test = transforms.Compose([
+    transforms.Scale(CROP_SIZE),
+    transforms.CenterCrop(CROP_SIZE),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+
+class FeatureExtractor(nn.Module):
+    def __init__(self, submodule):
+        super(FeatureExtractor, self).__init__()
+        self.submodule = submodule
+
+    def forward(self, x):
+        for name, module in self.submodule._modules.items()[:-1]:
+            x = module(x)
+        return x
