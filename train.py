@@ -62,14 +62,15 @@ def train(epoch):
         classification_loss = criterion_c(outputs, target)
         if TRIPLET_WEIGHT:
             data_tri_list = triplet_loader_iter.next()
+            triplet_batch_size = data_tri_list[0].shape[0]
             data_tri = torch.cat(data_tri_list, 0)
             data_tri = data_tri.cuda()
             data_tri = Variable(data_tri)
             feats = model(data_tri)[1]
             triplet_loss = criterion_t(
-                feats[:TRIPLET_BATCH_SIZE],
-                feats[TRIPLET_BATCH_SIZE:2 * TRIPLET_BATCH_SIZE],
-                feats[2 * TRIPLET_BATCH_SIZE:]
+                feats[:triplet_batch_size],
+                feats[triplet_batch_size:2 * triplet_batch_size],
+                feats[2 * triplet_batch_size:]
             )
             loss = classification_loss + triplet_loss * TRIPLET_WEIGHT
         else:
