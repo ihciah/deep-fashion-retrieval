@@ -4,7 +4,7 @@ Simple image retrieval algorithm on [deep-fashion dataset](http://mmlab.ie.cuhk.
 ![Capture](resources/Capture.PNG)
 
 ### Dependencies
-- Python (Compatible to 2 and 3)
+- Python (Compatible with 2 and 3)
 - [Pytorch](http://pytorch.org/)
 - Torchvision
 - PIL
