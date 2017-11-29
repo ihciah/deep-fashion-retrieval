@@ -61,7 +61,10 @@ def train(epoch):
         outputs = model(data)[0]
         classification_loss = criterion_c(outputs, target)
         if TRIPLET_WEIGHT:
-            data_tri_list = triplet_loader_iter.next()
+            try:
+                data_tri_list = triplet_loader_iter.next()
+            except StopIteration:
+                triplet_loader_iter = iter(triplet_loader)
             triplet_batch_size = data_tri_list[0].shape[0]
             data_tri = torch.cat(data_tri_list, 0)
             data_tri = data_tri.cuda()
