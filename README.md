@@ -18,7 +18,7 @@ Simple image retrieval algorithm on [deep-fashion dataset](http://mmlab.ie.cuhk.
 
 The models will be saved to `DATASET_BASE/models`.
 
-Model: ResNet50 - (Linear 1024 to 512) - (Linear 512 to 20)
+Model: ResNet50 - (Linear 1024 to 512) - (Linear 512 to 20), the 512-dim vector is regarded as images' identical features.
 
 Loss: CrossEntropyLoss + TripletMarginLoss * 0.5
 
@@ -48,3 +48,7 @@ Loss: CrossEntropyLoss + TripletMarginLoss * 0.5
 - Ubuntu 14.04
 - Pytorch 0.2.0_4
 
+### Future works
+- Add web support
+- Add more models and fuse them
+- Consider color when calculating similarity
