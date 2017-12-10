@@ -64,7 +64,7 @@ def naive_query(feature, feats, labels, retrieval_top_n=5):
 
 
 @timer_with_task("Doing query with k-Means")
-def kmeans_query(feature, feats, labels, retrieval_top_n=5):
+def kmeans_query(clf, feature, feats, labels, retrieval_top_n=5):
     label = clf.predict(feature.reshape(1, feature.shape[0]))
     ind = np.where(clf.labels_ == label)
     feats = feats[ind]
@@ -123,7 +123,7 @@ if __name__ == "__main__":
     clf = load_kmeans_model()
 
     result = naive_query(f, feats, labels, 5)
-    result_kmeans = kmeans_query(f, feats, labels, 5)
+    result_kmeans = kmeans_query(clf, f, feats, labels, 5)
 
     print(result)
     print(result_kmeans)
