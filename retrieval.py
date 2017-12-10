@@ -10,6 +10,9 @@ from data import Fashion
 from net import f_model
 import time
 
+from sklearn.cluster import KMeans
+from sklearn.externals import joblib
+
 
 @timer_with_task("Loading model")
 def load_test_model():
@@ -94,6 +97,16 @@ if __name__ == "__main__":
     extractor = load_test_model()
     feats, labels = load_feat_db()
     f = dump_single_feature("img/Sheer_Pleated-Front_Blouse/img_00000005.jpg", extractor)
+
+    model_path = os.path.join(DATASET_BASE, r'models', r'kmeans.m')
+    clf = joblib.load(model_path)
+    label = clf.predict(f.reshape(1,512))
+    ind = np.where(clf.labels_== label)
+    feats = feats[ind]
+    labels = np.array(labels)
+    labels = labels[ind]
+    labels = list(labels)
+
     result = naive_query(f, feats, labels, 5)
 
     print(result)
