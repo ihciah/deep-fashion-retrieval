@@ -27,7 +27,7 @@ Loss: CrossEntropyLoss + TripletMarginLoss * 0.5
     - Set `DUMPED_MODEL` in `config.py` as trained model
     - Run `scripts/feature_extractor.py`
     
-    The feature will be saved to `DATASET_BASE/features`
+    The feature will be saved to `DATASET_BASE/all_feat.npy` and `DATASET_BASE/all_feat.list`
 - Accelerating querying by clustering
     - Run `kmeans.py` to train the models, default 50 clusters.
     
