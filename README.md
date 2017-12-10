@@ -32,6 +32,9 @@ Loss: CrossEntropyLoss + TripletMarginLoss * 0.5
     - Seems no need to do this... A naive query on the database with 139,709 features cost about 0.12 sec. 
 
 ### Query with a picture
+- Run `kmeans.py` to train the models, default 50 clusters
+    The model will be saved as `DATABASE/models/kmeans.m`
+
 - Run `retrieval.py img_path`, for example:
 
     `python retrieval.py img/Sheer_Pleated-Front_Blouse/img_00000005.jpg`.
