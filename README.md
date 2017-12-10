@@ -29,11 +29,11 @@ Loss: CrossEntropyLoss + TripletMarginLoss * 0.5
     
     The feature will be saved to `DATASET_BASE/features`
 - Accelerating querying by clustering
-    - Seems no need to do this... A naive query on the database with 139,709 features cost about 0.12 sec. 
+    - Run `kmeans.py` to train the models, default 50 clusters.
+    
+        The model will be saved as `DATABASE/models/kmeans.m` 
 
 ### Query with a picture
-- Run `kmeans.py` to train the models, default 50 clusters
-    The model will be saved as `DATABASE/models/kmeans.m`
 
 - Run `retrieval.py img_path`, for example:
 
@@ -43,7 +43,8 @@ Loss: CrossEntropyLoss + TripletMarginLoss * 0.5
 - 2.854 sec for loading model, 
 - 0.078 sec for loading feature database, 
 - 0.519 sec for extracting feature of given image, 
-- 0.122 sec for doing query(139,709 features)
+- 0.122 sec for doing naive query(139,709 features)
+- 0.038 sec for doing query with kmeans(139,709 features)
 
 ### Environment
 - Intel(R) Core(TM) i7-4790K CPU @ 4.00GHz with 32GB RAM
