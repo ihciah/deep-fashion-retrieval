@@ -115,10 +115,12 @@ if __name__ == "__main__":
     example = "img/Sheer_Pleated-Front_Blouse/img_00000005.jpg"
     if len(sys.argv) > 1 and sys.argv[1].endswith("jpg"):
         example = sys.argv[1]
+    else:
+        print("Usage: python {} img_path\nNo input image, use default.".format(sys.argv[0]))
 
     extractor = load_test_model()
     feats, labels = load_feat_db()
-    f = dump_single_feature("img/Sheer_Pleated-Front_Blouse/img_00000005.jpg", extractor)
+    f = dump_single_feature(example, extractor)
 
     clf = load_kmeans_model()
 

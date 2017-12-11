@@ -15,7 +15,7 @@ extractor = FeatureExtractor(model)
 
 all_loader = torch.utils.data.DataLoader(
     Fashion(type="all", transform=data_transform_test),
-    batch_size=TEST_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
+    batch_size=EXTRACT_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
 )
 
 
@@ -38,7 +38,7 @@ def dump():
             labels.append(path)
 
         if batch_idx % LOG_INTERVAL == 0:
-            print("{} / {}".format(batch_idx * TEST_BATCH_SIZE, len(all_loader.dataset)))
+            print("{} / {}".format(batch_idx * EXTRACT_BATCH_SIZE, len(all_loader.dataset)))
 
     feat_all = os.path.join(DATASET_BASE, 'all_feat.npy')
     feat_list = os.path.join(DATASET_BASE, 'all_feat.list')
