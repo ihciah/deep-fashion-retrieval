@@ -10,14 +10,15 @@ NUM_WORKERS = 4
 LR = 0.001
 MOMENTUM = 0.5
 EPOCH = 10
-DUMPED_MODEL = "model_5_final.pth.tar"
+DUMPED_MODEL = "model_5_final_converted.pth.tar"
 
 LOG_INTERVAL = 10
 DUMP_INTERVAL = 500
 TEST_INTERVAL = 100
 
-DATASET_BASE = r'/DATACETNER/1/ch/deepfashion_data'
+# DATASET_BASE = r'/DATACETNER/1/ch/deepfashion_data'
 # DATASET_BASE = r'/dev/shm/ch'
+DATASET_BASE = r'/home/chihai/deepfashion_data'
 IMG_SIZE = 256
 CROP_SIZE = 224
 INTER_DIM = 512

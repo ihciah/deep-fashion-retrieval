@@ -14,7 +14,9 @@ class f_model(nn.Module):
         state_dict = self.backbone.state_dict()
         num_features = self.backbone.fc.in_features
         self.backbone = nn.Sequential(*list(self.backbone.children())[:-1])
-        self.backbone.load_state_dict(dict([(k, v) for k, v in state_dict if k in self.backbone.state_dict().keys()]))
+        model_dict = self.backbone.state_dict()
+        model_dict.update({k: v for k, v in state_dict.items() if k in model_dict})
+        self.backbone.load_state_dict(model_dict)
         if freeze_param:
             for param in self.backbone.parameters():
                 param.requires_grad = False
@@ -23,12 +25,14 @@ class f_model(nn.Module):
         self.fc2 = nn.Linear(inter_dim, num_classes)
         state = load_model(model_path)
         if state:
-            state = dict([(k, v) for k, v in state if k in self.state_dict().keys()])
-            self.load_state_dict(state)
+            new_state = self.state_dict()
+            new_state.update({k: v for k, v in state.items() if k in new_state})
+            self.load_state_dict(new_state)
 
     def forward(self, x):
         conv_out = self.backbone(x)
-        inter_out = self.fc(conv_out)
+        _, C, H, W = conv_out.data.size()
+        inter_out = self.fc(conv_out.view(-1, C * H * W))
         out = self.fc2(inter_out)
         return out, inter_out
 
