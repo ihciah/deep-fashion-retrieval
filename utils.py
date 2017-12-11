@@ -62,7 +62,9 @@ class FeatureExtractor(nn.Module):
         self.submodule = submodule
 
     def forward(self, x):
-        for name, module in self.submodule._modules.items()[:-1]:
+        for name, module in list(self.submodule._modules.items())[:-1]:
+            if name == 'fc':
+                x = x.view(x.size(0), -1)
             x = module(x)
         return x
 

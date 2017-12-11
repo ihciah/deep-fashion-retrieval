@@ -31,10 +31,10 @@ class f_model(nn.Module):
 
     def forward(self, x):
         conv_out = self.backbone(x)
-        _, C, H, W = conv_out.data.size()
-        inter_out = self.fc(conv_out.view(-1, C * H * W))
+        conv_out = conv_out.view(conv_out.size(0), -1)
+        inter_out = self.fc(conv_out)
         out = self.fc2(inter_out)
-        return out, inter_out
+        return out, inter_out, conv_out
 
 
 if __name__ == "__main__":
