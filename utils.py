@@ -47,6 +47,7 @@ def load_feature(img_path):
     else:
         return None
 
+
 data_transform_test = transforms.Compose([
     transforms.Scale(CROP_SIZE),
     transforms.CenterCrop(CROP_SIZE),
