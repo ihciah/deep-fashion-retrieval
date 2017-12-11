@@ -6,7 +6,7 @@ from PIL import Image
 import random
 
 
-class Fashion(data.Dataset):
+class Fashion_attr_prediction(data.Dataset):
     def __init__(self, type="train", transform=None, target_transform=None, crop=False, img_path=None):
         self.transform = transform
         self.target_transform = target_transform

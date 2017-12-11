@@ -4,7 +4,7 @@ import os
 from config import *
 from utils import *
 from torch.autograd import Variable
-from data import Fashion
+from data import Fashion_attr_prediction
 from net import f_model, c_model, p_model
 
 
@@ -15,7 +15,7 @@ extractor = FeatureExtractor(main_model, color_model, pooling_model)
 
 
 all_loader = torch.utils.data.DataLoader(
-    Fashion(type="all", transform=data_transform_test),
+    Fashion_attr_prediction(type="all", transform=data_transform_test),
     batch_size=EXTRACT_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
 )
 

@@ -8,7 +8,7 @@ from torchvision import transforms
 from torch.autograd import Variable
 from config import *
 from utils import *
-from data import Fashion
+from data import Fashion_attr_prediction
 from net import f_model
 
 
@@ -29,17 +29,17 @@ data_transform_test = transforms.Compose([
 
 
 train_loader = torch.utils.data.DataLoader(
-    Fashion(type="train", transform=data_transform_train),
+    Fashion_attr_prediction(type="train", transform=data_transform_train),
     batch_size=TRAIN_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
 )
 
 test_loader = torch.utils.data.DataLoader(
-    Fashion(type="test", transform=data_transform_test),
+    Fashion_attr_prediction(type="test", transform=data_transform_test),
     batch_size=TEST_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
 )
 
 triplet_loader = torch.utils.data.DataLoader(
-    Fashion(type="triplet", transform=data_transform_train),
+    Fashion_attr_prediction(type="triplet", transform=data_transform_train),
     batch_size=TRIPLET_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
 )
 

@@ -6,7 +6,7 @@ from scipy.spatial.distance import cdist
 from torch.autograd import Variable
 from config import *
 from utils import *
-from data import Fashion
+from data import Fashion_attr_prediction
 from net import f_model
 import time
 
@@ -84,7 +84,7 @@ def dump_single_feature(img_path, extractor):
         if not os.path.isfile(i):
             continue
         single_loader = torch.utils.data.DataLoader(
-            Fashion(type="single", img_path=i, transform=data_transform_test),
+            Fashion_attr_prediction(type="single", img_path=i, transform=data_transform_test),
             batch_size=1, num_workers=NUM_WORKERS, pin_memory=True
         )
         data = list(single_loader)[0]
