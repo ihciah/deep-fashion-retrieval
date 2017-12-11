@@ -5,12 +5,13 @@ from config import *
 from utils import *
 from torch.autograd import Variable
 from data import Fashion
-from net import f_model
+from net import f_model, c_model, p_model
 
 
-model = f_model(model_path=DUMPED_MODEL).cuda(GPU_ID)
-model.eval()
-extractor = FeatureExtractor(model)
+main_model = f_model(model_path=DUMPED_MODEL).cuda(GPU_ID)
+color_model = c_model().cuda(GPU_ID)
+pooling_model = p_model().cuda(GPU_ID)
+extractor = FeatureExtractor(main_model, color_model, pooling_model)
 
 
 all_loader = torch.utils.data.DataLoader(
@@ -24,17 +25,17 @@ def dump():
     labels = []
     for batch_idx, (data, data_path) in enumerate(all_loader):
         data = Variable(data).cuda(GPU_ID)
-        result = extractor(data)
-        result = result.cpu().data.numpy()
+        deep_feat, color_feat = extractor(data)
+        deep_feat = deep_feat.cpu().data.numpy()
         for i in range(len(data_path)):
             path = data_path[i]
-            feature = result[i].squeeze()
+            feature_n = deep_feat[i].squeeze()
             # dump_feature(feature, path)
 
             if feats is None:
-                feats = feature
+                feats = feature_n
             else:
-                feats = np.vstack([feats, feature])
+                feats = np.vstack([feats, feature_n])
             labels.append(path)
 
         if batch_idx % LOG_INTERVAL == 0:
