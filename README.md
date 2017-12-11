@@ -53,6 +53,7 @@ Loss: CrossEntropyLoss + TripletMarginLoss * 0.5
 - Pytorch 0.2.0_4
 
 ### Future works
+- Add color feature(with conv output as weight)
 - Add web support
 - Add more models and fuse them
 - Consider color when calculating similarity

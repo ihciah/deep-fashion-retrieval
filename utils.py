@@ -7,6 +7,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 from torchvision import transforms
+from PIL import Image
 
 
 def dump_model(model, epoch, batch_idx="final"):
