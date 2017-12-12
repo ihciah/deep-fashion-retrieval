@@ -21,8 +21,8 @@ all_loader = torch.utils.data.DataLoader(
 
 
 def dump():
-    deep_feats = None
-    color_feats = None
+    deep_feats = []
+    color_feats = []
     labels = []
     for batch_idx, (data, data_path) in enumerate(all_loader):
         data = Variable(data).cuda(GPU_ID)
@@ -34,12 +34,8 @@ def dump():
             color_feature_n = color_feat[i]
             # dump_feature(feature, path)
 
-            if deep_feats is None:
-                deep_feats = feature_n
-                color_feats = color_feature_n
-            else:
-                deep_feats = np.vstack([deep_feats, feature_n])
-                color_feats = np.vstack([color_feats, color_feature_n])
+            deep_feats.append(feature_n)
+            color_feats.append(color_feature_n)
             labels.append(path)
 
         if batch_idx % LOG_INTERVAL == 0:
@@ -50,8 +46,8 @@ def dump():
     feat_list = os.path.join(DATASET_BASE, 'all_feat.list')
     with open(feat_list, "w") as fw:
         fw.write("\n".join(labels))
-    np.save(feat_all, deep_feats)
-    np.save(color_feat_all, color_feats)
+    np.save(feat_all, np.vstack(deep_feats))
+    np.save(color_feat_all, np.vstack(color_feats))
     print("Dumped to all_feat.npy, all_color_feat.npy and all_feat.list.")
 
 
