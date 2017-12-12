@@ -22,7 +22,9 @@ Deep Feature: ResNet50 - (Linear 1024 to 512) - (Linear 512 to 20), the 512-dim 
 
 Loss: CrossEntropyLoss + TripletMarginLoss * 0.5
 
-Color Feature: Get ResNet50 conv layer output(N * C * 7 * 7), then do avg_pooling on channel dim. Choose the max-N responses and extract the corresponding blocks on avg_pooling map of original image.
+Color Feature: Get ResNet50 final conv layer output(N * C * 7 * 7), then do avg_pooling on channel dim. Choose the max-N responses and extract the corresponding blocks on avg_pooling map of original image.
+
+Training details: Freeze the conv parameters and train net until a stable accuracy and loss, then set FREEZE to False and train it again.
 
 
 ### Generating feature databases
@@ -56,7 +58,6 @@ Color Feature: Get ResNet50 conv layer output(N * C * 7 * 7), then do avg_poolin
 - Pytorch 0.2.0_4
 
 ### Future works
-- Add color feature(with conv output as weight)
 - Add web support
 - Add more models and fuse them
 - Consider color when calculating similarity

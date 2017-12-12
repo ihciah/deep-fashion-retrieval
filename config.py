@@ -16,8 +16,6 @@ LOG_INTERVAL = 10
 DUMP_INTERVAL = 500
 TEST_INTERVAL = 100
 
-# DATASET_BASE = r'/DATACETNER/1/ch/deepfashion_data'
-# DATASET_BASE = r'/dev/shm/ch'
 DATASET_BASE = r'/home/chihai/deepfashion_data'
 IMG_SIZE = 256
 CROP_SIZE = 224
