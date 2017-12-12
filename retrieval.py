@@ -7,7 +7,7 @@ from torch.autograd import Variable
 from config import *
 from utils import *
 from data import Fashion_attr_prediction
-from net import f_model
+from net import f_model, c_model, p_model
 import time
 
 from sklearn.cluster import KMeans
@@ -19,9 +19,10 @@ def load_test_model():
     if not os.path.isfile(DUMPED_MODEL) and not os.path.isfile(os.path.join(DATASET_BASE, "models", DUMPED_MODEL)):
         print("No trained model file!")
         return
-    model = f_model(model_path=DUMPED_MODEL).cuda(GPU_ID)
-    model.eval()
-    extractor = FeatureExtractor(model)
+    main_model = f_model(model_path=DUMPED_MODEL).cuda(GPU_ID)
+    color_model = c_model().cuda(GPU_ID)
+    pooling_model = p_model().cuda(GPU_ID)
+    extractor = FeatureExtractor(main_model, color_model, pooling_model)
     return extractor
 
 
@@ -89,9 +90,10 @@ def dump_single_feature(img_path, extractor):
         )
         data = list(single_loader)[0]
         data = Variable(data).cuda(GPU_ID)
-        result = extractor(data)
-        result = result.cpu().data.numpy()[0].squeeze()
-        return result
+        deep_feat, color_feat = extractor(data)
+        deep_feat = deep_feat[0].squeeze()
+        color_feat = color_feat[0]
+        return deep_feat, color_feat
     return None
 
 
@@ -124,8 +126,8 @@ if __name__ == "__main__":
 
     clf = load_kmeans_model()
 
-    result = naive_query(f, feats, labels, 5)
-    result_kmeans = kmeans_query(clf, f, feats, labels, 5)
+    result = naive_query(f[0], feats, labels, 5)
+    result_kmeans = kmeans_query(clf, f[0], feats, labels, 5)
 
     print(result)
     print(result_kmeans)

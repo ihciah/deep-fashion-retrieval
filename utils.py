@@ -82,7 +82,7 @@ class FeatureExtractor(nn.Module):
             color_n = color[i].reshape(color.shape[1], -1)
             color_selected = color_n[:, idx].reshape(-1)
             result.append(color_selected)
-        return feat, result
+        return feat.cpu().data.numpy(), result
 
 
 def timer_with_task(job=""):

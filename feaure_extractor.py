@@ -27,7 +27,6 @@ def dump():
     for batch_idx, (data, data_path) in enumerate(all_loader):
         data = Variable(data).cuda(GPU_ID)
         deep_feat, color_feat = extractor(data)
-        deep_feat = deep_feat.cpu().data.numpy()
         for i in range(len(data_path)):
             path = data_path[i]
             feature_n = deep_feat[i].squeeze()
