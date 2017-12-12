@@ -28,13 +28,15 @@ def load_test_model():
 def load_feat_db():
     feat_all = os.path.join(DATASET_BASE, 'all_feat.npy')
     feat_list = os.path.join(DATASET_BASE, 'all_feat.list')
-    if not os.path.isfile(feat_list) or not os.path.isfile(feat_all):
+    color_feat = os.path.join(DATASET_BASE, 'all_color_feat.npy')
+    if not os.path.isfile(feat_list) or not os.path.isfile(feat_all) or not os.path.isfile(color_feat):
         print("No feature db file! Please run feature_extractor.py first.")
         return
-    feats = np.load(feat_all)
+    deep_feats = np.load(feat_all)
+    color_feats = np.load(color_feat)
     with open(feat_list) as f:
         labels = list(map(lambda x: x.strip(), f.readlines()))
-    return feats, labels
+    return deep_feats, color_feats, labels
 
 
 @timer_with_task("Loading feature K-means model")
@@ -52,32 +54,40 @@ def read_lines(path):
     return names
 
 
-def get_top_n(feature, feats, labels, retrieval_top_n=5):
-    dist = -cdist(np.expand_dims(feature, axis=0), feats)[0]
+def get_top_n(dist, labels, retrieval_top_n):
     ind = np.argpartition(dist, -retrieval_top_n)[-retrieval_top_n:][::-1]
     ret = list(zip([labels[i] for i in ind], dist[ind]))
     ret = sorted(ret, key=lambda x: x[1], reverse=True)
     return ret
 
 
+def get_similarity(feature, feats, metric='cosine'):
+    dist = -cdist(np.expand_dims(feature, axis=0), feats, metric)[0]
+    return dist
+
+
+def get_deep_color_top_n(features, deep_feats, color_feats, labels, retrieval_top_n=5):
+    deep_scores = get_similarity(features[0], deep_feats, DISTANCE_METRIC[0])
+    color_scores = get_similarity(features[1], color_feats, DISTANCE_METRIC[1])
+    results = get_top_n(deep_scores + color_scores * COLOR_WEIGHT, labels, retrieval_top_n)
+    return results
+
+
 @timer_with_task("Doing naive query")
-def naive_query(feature, feats, labels, retrieval_top_n=5):
-    if feature is None:
-        print("Input feature is None")
-        return
-    return get_top_n(feature, feats, labels, retrieval_top_n)
+def naive_query(features, deep_feats, color_feats, labels, retrieval_top_n=5):
+    results = get_deep_color_top_n(features, deep_feats, color_feats, labels, retrieval_top_n)
+    return results
 
 
 @timer_with_task("Doing query with k-Means")
-def kmeans_query(clf, feature, feats, labels, retrieval_top_n=5):
-    label = clf.predict(feature.reshape(1, feature.shape[0]))
+def kmeans_query(clf, features, deep_feats, color_feats, labels, retrieval_top_n=5):
+    label = clf.predict(features[0].reshape(1, features[0].shape[0]))
     ind = np.where(clf.labels_ == label)
-    feats = feats[ind]
-    labels = list(np.array(labels)[ind])
-    if feature is None:
-        print("Input feature is None")
-        return
-    return get_top_n(feature, feats, labels, retrieval_top_n)
+    d_feats = deep_feats[ind]
+    c_feats = color_feats[ind]
+    n_labels = list(np.array(labels)[ind])
+    results = get_deep_color_top_n(features, d_feats, c_feats, n_labels, retrieval_top_n)
+    return results
 
 
 @timer_with_task("Extracting image feature")
@@ -123,13 +133,17 @@ if __name__ == "__main__":
         print("Usage: python {} img_path\nNo input image, use default.".format(sys.argv[0]))
 
     extractor = load_test_model()
-    feats, labels = load_feat_db()
+    deep_feats, color_feats, labels = load_feat_db()
     f = dump_single_feature(example, extractor)
+
+    if not all(map(lambda x: x is not None, f)):
+        print("Input feature is None")
+        exit()
 
     clf = load_kmeans_model()
 
-    result = naive_query(f[0], feats, labels, 5)
-    result_kmeans = kmeans_query(clf, f[0], feats, labels, 5)
+    result = naive_query(f, deep_feats, color_feats, labels, 5)
+    result_kmeans = kmeans_query(clf, f, deep_feats, color_feats, labels, 5)
 
     print("Naive query result:", result)
     print("K-Means query result:", result_kmeans)
