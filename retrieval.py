@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import os
 import sys
 import numpy as np
@@ -8,9 +9,6 @@ from config import *
 from utils import *
 from data import Fashion_attr_prediction
 from net import f_model, c_model, p_model
-import time
-
-from sklearn.cluster import KMeans
 from sklearn.externals import joblib
 
 
@@ -54,14 +52,20 @@ def read_lines(path):
     return names
 
 
+def get_top_n(feature, feats, labels, retrieval_top_n=5):
+    dist = -cdist(np.expand_dims(feature, axis=0), feats)[0]
+    ind = np.argpartition(dist, -retrieval_top_n)[-retrieval_top_n:][::-1]
+    ret = list(zip([labels[i] for i in ind], dist[ind]))
+    ret = sorted(ret, key=lambda x: x[1], reverse=True)
+    return ret
+
+
 @timer_with_task("Doing naive query")
 def naive_query(feature, feats, labels, retrieval_top_n=5):
     if feature is None:
         print("Input feature is None")
         return
-    dist = 1 - cdist(np.expand_dims(feature, axis=0), feats)[0]
-    ind = np.argpartition(dist, -retrieval_top_n)[-retrieval_top_n:][::-1]
-    return zip([labels[i] for i in ind], dist[ind])
+    return get_top_n(feature, feats, labels, retrieval_top_n)
 
 
 @timer_with_task("Doing query with k-Means")
@@ -73,9 +77,7 @@ def kmeans_query(clf, feature, feats, labels, retrieval_top_n=5):
     if feature is None:
         print("Input feature is None")
         return
-    dist = 1 - cdist(np.expand_dims(feature, axis=0), feats)[0]
-    ind = np.argpartition(dist, -retrieval_top_n)[-retrieval_top_n:][::-1]
-    return zip([labels[i] for i in ind], dist[ind])
+    return get_top_n(feature, feats, labels, retrieval_top_n)
 
 
 @timer_with_task("Extracting image feature")
@@ -129,7 +131,7 @@ if __name__ == "__main__":
     result = naive_query(f[0], feats, labels, 5)
     result_kmeans = kmeans_query(clf, f[0], feats, labels, 5)
 
-    print(result)
-    print(result_kmeans)
+    print("Naive query result:", result)
+    print("K-Means query result:", result_kmeans)
     visualize(example, result)
     visualize(example, result_kmeans)
