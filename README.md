@@ -18,16 +18,19 @@ Simple image retrieval algorithm on [deep-fashion dataset](http://mmlab.ie.cuhk.
 
 The models will be saved to `DATASET_BASE/models`.
 
-Model: ResNet50 - (Linear 1024 to 512) - (Linear 512 to 20), the 512-dim vector is regarded as images' identical features.
+Deep Feature: ResNet50 - (Linear 1024 to 512) - (Linear 512 to 20), the 512-dim vector is regarded as images' identical features.
 
 Loss: CrossEntropyLoss + TripletMarginLoss * 0.5
+
+Color Feature: Get ResNet50 conv layer output(N * C * 7 * 7), then do avg_pooling on channel dim. Choose the max-N responses and extract the corresponding blocks on avg_pooling map of original image.
+
 
 ### Generating feature databases
 - Feature extraction
     - Set `DUMPED_MODEL` in `config.py` as trained model
-    - Run `scripts/feature_extractor.py`
+    - Run `feature_extractor.py`
     
-    The feature will be saved to `DATASET_BASE/all_feat.npy` and `DATASET_BASE/all_feat.list`
+    The feature will be saved to `DATASET_BASE/all_feat.npy`, `DATASET_BASE/all_color_feat.npy` and `DATASET_BASE/all_feat.list`.
 - Accelerating querying by clustering
     - Run `kmeans.py` to train the models, default 50 clusters.
     
