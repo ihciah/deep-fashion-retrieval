@@ -8,6 +8,7 @@ Simple image retrieval algorithm on [deep-fashion dataset](http://mmlab.ie.cuhk.
 - [Pytorch](http://pytorch.org/)
 - Torchvision
 - PIL
+- cv2(only for visualizing)
 
 [Anaconda](https://www.anaconda.com/download/) is recommended.
 
@@ -60,7 +61,7 @@ Directory structure:
 
     `python retrieval.py img/Sheer_Pleated-Front_Blouse/img_00000005.jpg`.
     
-    Set `DISTANCE_METRIC` in `config.py` to use different metrics such as `cosine`, `euclidean` on deep feature and color feature..
+    Set `DISTANCE_METRIC` in `config.py` to use different [metrics](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.distance.cdist.html) such as `cosine`, `euclidean` on deep feature and color feature..
     
 ### Time cost
 - 2.854 sec for loading model
