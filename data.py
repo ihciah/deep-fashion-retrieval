@@ -119,3 +119,73 @@ class Fashion_attr_prediction(data.Dataset):
             target = self.target_transform(target)
 
         return img, img_path if self.type == "all" else target
+
+
+class Fashion_inshop(data.Dataset):
+    def __init__(self, type="train", transform=None):
+        self.transform = transform
+        self.type = type
+        self.train_dict = {}
+        self.test_dict = {}
+        self.train_list = []
+        self.test_list = []
+        self.cloth = self.readcloth()
+        self.read_train_test()
+
+    def read_lines(self, path):
+        with open(path) as fin:
+            lines = fin.readlines()[2:]
+            lines = list(filter(lambda x: len(x) > 0, lines))
+            pairs = list(map(lambda x: x.strip().split(), lines))
+        return pairs
+
+    def readcloth(self):
+        lines = self.read_lines(os.path.join(DATASET_BASE, 'in_shop', 'list_bbox_inshop.txt'))
+        valid_lines = list(filter(lambda x: x[1] == '1', lines))
+        names = set(list(map(lambda x: x[0], valid_lines)))
+        return names
+
+    def read_train_test(self):
+        lines = self.read_lines(os.path.join(DATASET_BASE, 'in_shop', 'list_eval_partition.txt'))
+        valid_lines = list(filter(lambda x: x[0] in self.cloth, lines))
+        for line in valid_lines:
+            s = self.train_dict if line[2] == 'train' else self.test_dict
+            if line[1] not in s:
+                s[line[1]] = [line[0]]
+            else:
+                s[line[1]].append(line[0])
+
+        def clear_single(d):
+            keys_to_delete = []
+            for k, v in d.items():
+                if len(v) < 2:
+                    keys_to_delete.append(k)
+            for k in keys_to_delete:
+                d.pop(k, None)
+        clear_single(self.train_dict)
+        clear_single(self.test_dict)
+        self.train_list, self.test_list = self.train_dict.keys(), self.test_dict.keys()
+
+    def process_img(self, img_path):
+        img_full_path = os.path.join(DATASET_BASE, 'in_shop', img_path)
+        with open(img_full_path, 'rb') as f:
+            with Image.open(f) as img:
+                img = img.convert('RGB')
+        if self.transform is not None:
+            img = self.transform(img)
+        return img
+
+    def __len__(self):
+        if self.type == 'train':
+            return len(self.train_list)
+        return len(self.test_list)
+
+    def __getitem__(self, item):
+        s_d = self.train_dict if self.type == 'train' else self.test_dict
+        s_l = self.train_list if self.type == 'train' else self.test_list
+        imgs = s_d[s_l[item]]
+        img_triplet = random.sample(imgs, 2)
+        img_other_id = random.choice(range(0, item) + range(item + 1, len(s_l)))
+        img_other = random.choice(s_d[s_l[img_other_id]])
+        img_triplet.append(img_other)
+        return list(map(self.process_img, img_triplet))

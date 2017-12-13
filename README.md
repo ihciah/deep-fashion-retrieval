@@ -20,12 +20,28 @@ The models will be saved to `DATASET_BASE/models`.
 
 Deep Feature: ResNet50 - (Linear 1024 to 512) - (Linear 512 to 20), the 512-dim vector is regarded as images' identical features.
 
-Loss: CrossEntropyLoss + TripletMarginLoss * 0.5
+Loss: CrossEntropyLoss + TripletMarginLoss * Weight
 
 Color Feature: Get ResNet50 final conv layer output(N * C * 7 * 7), then do avg_pooling on channel dim. Choose the max-N responses and extract the corresponding blocks on avg_pooling map of original image.
 
 Training details: Freeze the conv parameters and train net until a stable accuracy and loss, then set FREEZE to False and train it again.
 
+If you applied the [DeepFashion: In-shop Clothes Retrieval](http://mmlab.ie.cuhk.edu.hk/projects/DeepFashion/InShopRetrieval.html), you can set `ENABLE_INSHOP_DATASET` to `True`.
+
+Directory structure:
+- DATASET_BASE
+    - Anno
+    - Eval
+    - img
+    - models(generated)
+    - in_shop(optional)
+        - list_bbox_inshop.txt
+        - list_eval_partition.txt
+        - img
+    - all_feat.list(generated)
+    - all_feat.npy(generated)
+    - all_color_feat.npy(generated)
+    
 
 ### Generating feature databases
 - Feature extraction
@@ -44,10 +60,12 @@ Training details: Freeze the conv parameters and train net until a stable accura
 
     `python retrieval.py img/Sheer_Pleated-Front_Blouse/img_00000005.jpg`.
     
+    Set `DISTANCE_METRIC` in `config.py` to use different metrics such as `cosine`, `euclidean` on deep feature and color feature..
+    
 ### Time cost
-- 2.854 sec for loading model, 
-- 0.078 sec for loading feature database, 
-- 0.519 sec for extracting feature of given image, 
+- 2.854 sec for loading model
+- 0.078 sec for loading feature database
+- 0.519 sec for extracting feature of given image
 - 0.122 sec for doing naive query(139,709 features)
 - 0.038 sec for doing query with kmeans(139,709 features)
 
@@ -60,4 +78,3 @@ Training details: Freeze the conv parameters and train net until a stable accura
 ### Future works
 - Add web support
 - Add more models and fuse them
-- Consider color when calculating similarity

@@ -2,13 +2,14 @@
 from __future__ import print_function
 
 import torch
+import random
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import transforms
 from torch.autograd import Variable
 from config import *
 from utils import *
-from data import Fashion_attr_prediction
+from data import Fashion_attr_prediction, Fashion_inshop
 from net import f_model
 
 
@@ -43,6 +44,12 @@ triplet_loader = torch.utils.data.DataLoader(
     batch_size=TRIPLET_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
 )
 
+if ENABLE_INSHOP_DATASET:
+    triplet_in_shop_loader = torch.utils.data.DataLoader(
+        Fashion_inshop(type="train", transform=data_transform_train),
+        batch_size=TRIPLET_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
+    )
+
 model = f_model(freeze_param=FREEZE_PARAM, model_path=DUMPED_MODEL).cuda(GPU_ID)
 optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=LR, momentum=MOMENTUM)
 
@@ -52,6 +59,9 @@ def train(epoch):
     criterion_c = nn.CrossEntropyLoss()
     criterion_t = nn.TripletMarginLoss()
     triplet_loader_iter = iter(triplet_loader)
+    triplet_type = 0
+    if ENABLE_INSHOP_DATASET:
+        triplet_in_shop_loader_iter = iter(triplet_in_shop_loader)
     for batch_idx, (data, target) in enumerate(train_loader):
         if batch_idx % TEST_INTERVAL == 0:
             test()
@@ -61,10 +71,20 @@ def train(epoch):
         outputs = model(data)[0]
         classification_loss = criterion_c(outputs, target)
         if TRIPLET_WEIGHT:
-            try:
-                data_tri_list = next(triplet_loader_iter)
-            except StopIteration:
-                triplet_loader_iter = iter(triplet_loader)
+            if ENABLE_INSHOP_DATASET and random.random() < INSHOP_DATASET_PRECENT:
+                triplet_type = 1
+                try:
+                    data_tri_list = next(triplet_in_shop_loader_iter)
+                except StopIteration:
+                    triplet_in_shop_loader_iter = iter(triplet_in_shop_loader)
+                    data_tri_list = next(triplet_in_shop_loader_iter)
+            else:
+                triplet_type = 0
+                try:
+                    data_tri_list = next(triplet_loader_iter)
+                except StopIteration:
+                    triplet_loader_iter = iter(triplet_loader)
+                    data_tri_list = next(triplet_loader_iter)
             triplet_batch_size = data_tri_list[0].shape[0]
             data_tri = torch.cat(data_tri_list, 0)
             data_tri = data_tri.cuda(GPU_ID)
@@ -83,9 +103,9 @@ def train(epoch):
         if batch_idx % LOG_INTERVAL == 0:
             if TRIPLET_WEIGHT:
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tAll Loss: {:.4f}\t'
-                      'Triple Loss: {:.4f}\tClassification Loss: {:.4f}'.format(
+                      'Triple Loss({}): {:.4f}\tClassification Loss: {:.4f}'.format(
                     epoch, batch_idx * len(data), len(train_loader.dataset),
-                    100. * batch_idx / len(train_loader), loss.data[0],
+                    100. * batch_idx / len(train_loader), loss.data[0], triplet_type,
                     triplet_loss.data[0], classification_loss.data[0]))
             else:
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tClassification Loss: {:.4f}'.format(
@@ -120,4 +140,3 @@ def test():
 if __name__ == "__main__":
     for epoch in range(1, EPOCH + 1):
         train(epoch)
-
