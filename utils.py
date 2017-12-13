@@ -7,7 +7,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 from torchvision import transforms
-from PIL import Image
+import torch.nn.functional as F
 
 
 def dump_model(model, epoch, batch_idx="final"):
@@ -83,6 +83,23 @@ class FeatureExtractor(nn.Module):
             color_selected = color_n[:, idx].reshape(-1)
             result.append(color_selected)
         return feat.cpu().data.numpy(), result
+
+
+class TripletMarginLossCosine(nn.Module):
+    def __init__(self, margin=1.0):
+        super(TripletMarginLossCosine, self).__init__()
+        self.margin = margin
+
+    def forward(self, anchor, positive, negative):
+        d_p = 1 - F.cosine_similarity(anchor, positive).view(-1, 1)
+        d_n = 1 - F.cosine_similarity(anchor, negative).view(-1, 1)
+        # p = 2
+        # eps = 1e-6
+        # d_p = F.pairwise_distance(anchor, positive, p, eps)
+        # d_n = F.pairwise_distance(anchor, negative, p, eps)
+        dist_hinge = torch.clamp(self.margin + d_p - d_n, min=0.0)
+        loss = torch.mean(dist_hinge)
+        return loss
 
 
 def timer_with_task(job=""):

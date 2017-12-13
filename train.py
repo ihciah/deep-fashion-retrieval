@@ -57,7 +57,10 @@ optimizer = optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=
 def train(epoch):
     model.train()
     criterion_c = nn.CrossEntropyLoss()
-    criterion_t = nn.TripletMarginLoss()
+    if ENABLE_TRIPLET_WITH_COSINE:
+        criterion_t = TripletMarginLossCosine()
+    else:
+        criterion_t = nn.TripletMarginLoss()
     triplet_loader_iter = iter(triplet_loader)
     triplet_type = 0
     if ENABLE_INSHOP_DATASET:
@@ -88,7 +91,7 @@ def train(epoch):
             triplet_batch_size = data_tri_list[0].shape[0]
             data_tri = torch.cat(data_tri_list, 0)
             data_tri = data_tri.cuda(GPU_ID)
-            data_tri = Variable(data_tri)
+            data_tri = Variable(data_tri, requires_grad=True)
             feats = model(data_tri)[1]
             triplet_loss = criterion_t(
                 feats[:triplet_batch_size],

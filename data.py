@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import torch.utils.data as data
+import torch
 from config import *
 import os
 from PIL import Image
@@ -164,7 +165,7 @@ class Fashion_inshop(data.Dataset):
                 d.pop(k, None)
         clear_single(self.train_dict)
         clear_single(self.test_dict)
-        self.train_list, self.test_list = self.train_dict.keys(), self.test_dict.keys()
+        self.train_list, self.test_list = list(self.train_dict.keys()), list(self.test_dict.keys())
 
     def process_img(self, img_path):
         img_full_path = os.path.join(DATASET_BASE, 'in_shop', img_path)
@@ -185,7 +186,7 @@ class Fashion_inshop(data.Dataset):
         s_l = self.train_list if self.type == 'train' else self.test_list
         imgs = s_d[s_l[item]]
         img_triplet = random.sample(imgs, 2)
-        img_other_id = random.choice(range(0, item) + range(item + 1, len(s_l)))
+        img_other_id = random.choice(list(range(0, item)) + list(range(item + 1, len(s_l))))
         img_other = random.choice(s_d[s_l[img_other_id]])
         img_triplet.append(img_other)
         return list(map(self.process_img, img_triplet))
