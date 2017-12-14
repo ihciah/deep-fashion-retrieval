@@ -167,8 +167,12 @@ class Fashion_inshop(data.Dataset):
         clear_single(self.train_dict)
         clear_single(self.test_dict)
         self.train_list, self.test_list = list(self.train_dict.keys()), list(self.test_dict.keys())
-        for v in list(self.train_dict.values()) + list(self.test_dict.values()):
+        for v in list(self.train_dict.values()):
             self.all_path += v
+        self.train_len = len(self.all_path)
+        for v in list(self.test_dict.values()):
+            self.all_path += v
+        self.test_len = len(self.all_path) - self.train_len
 
     def process_img(self, img_path):
         img_full_path = os.path.join(DATASET_BASE, 'in_shop', img_path)

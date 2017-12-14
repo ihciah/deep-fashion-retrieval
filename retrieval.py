@@ -92,7 +92,7 @@ def kmeans_query(clf, features, deep_feats, color_feats, labels, retrieval_top_n
 
 @timer_with_task("Extracting image feature")
 def dump_single_feature(img_path, extractor):
-    paths = [img_path, os.path.join(DATASET_BASE, img_path)]
+    paths = [img_path, os.path.join(DATASET_BASE, img_path), os.path.join(DATASET_BASE, 'in_shop', img_path)]
     for i in paths:
         if not os.path.isfile(i):
             continue
@@ -140,7 +140,7 @@ if __name__ == "__main__":
     deep_feats, color_feats, labels = load_feat_db()
     f = dump_single_feature(example, extractor)
 
-    if not all(map(lambda x: x is not None, f)):
+    if any(list(map(lambda x: x is None, f))):
         print("Input feature is None")
         exit()
 
