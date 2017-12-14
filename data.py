@@ -130,6 +130,7 @@ class Fashion_inshop(data.Dataset):
         self.test_dict = {}
         self.train_list = []
         self.test_list = []
+        self.all_path = []
         self.cloth = self.readcloth()
         self.read_train_test()
 
@@ -166,6 +167,8 @@ class Fashion_inshop(data.Dataset):
         clear_single(self.train_dict)
         clear_single(self.test_dict)
         self.train_list, self.test_list = list(self.train_dict.keys()), list(self.test_dict.keys())
+        for v in list(self.train_dict.values()) + list(self.test_dict.values()):
+            self.all_path += v
 
     def process_img(self, img_path):
         img_full_path = os.path.join(DATASET_BASE, 'in_shop', img_path)
@@ -179,9 +182,16 @@ class Fashion_inshop(data.Dataset):
     def __len__(self):
         if self.type == 'train':
             return len(self.train_list)
-        return len(self.test_list)
+        elif self.type == 'test':
+            return len(self.test_list)
+        else:
+            return len(self.all_path)
 
     def __getitem__(self, item):
+        if self.type == 'all':
+            img_path = self.all_path[item]
+            img = self.process_img(img_path)
+            return img, img_path
         s_d = self.train_dict if self.type == 'train' else self.test_dict
         s_l = self.train_list if self.type == 'train' else self.test_list
         imgs = s_d[s_l[item]]

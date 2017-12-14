@@ -115,7 +115,11 @@ def visualize(original, result, cols=1):
     n_images = len(result) + 1
     titles = ["Original"] + ["Score: {:.4f}".format(v) for k, v in result]
     images = [original] + [k for k, v in result]
-    images = list(map(lambda x: cv2.cvtColor(cv2.imread(os.path.join(DATASET_BASE, x)), cv2.COLOR_BGR2RGB), images))
+    mod_full_path = lambda x: os.path.join(DATASET_BASE, x) \
+        if os.path.isfile(os.path.join(DATASET_BASE, x)) \
+        else os.path.join(DATASET_BASE, 'in_shop', x,)
+    images = list(map(mod_full_path, images))
+    images = list(map(lambda x: cv2.cvtColor(cv2.imread(x), cv2.COLOR_BGR2RGB), images))
     fig = plt.figure()
     for n, (image, title) in enumerate(zip(images, titles)):
         a = fig.add_subplot(cols, np.ceil(n_images / float(cols)), n + 1)

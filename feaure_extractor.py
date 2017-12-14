@@ -4,7 +4,7 @@ import os
 from config import *
 from utils import *
 from torch.autograd import Variable
-from data import Fashion_attr_prediction
+from data import Fashion_attr_prediction, Fashion_inshop
 from net import f_model, c_model, p_model
 
 
@@ -14,17 +14,8 @@ pooling_model = p_model().cuda(GPU_ID)
 extractor = FeatureExtractor(main_model, color_model, pooling_model)
 
 
-all_loader = torch.utils.data.DataLoader(
-    Fashion_attr_prediction(type="all", transform=data_transform_test),
-    batch_size=EXTRACT_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
-)
-
-
-def dump():
-    deep_feats = []
-    color_feats = []
-    labels = []
-    for batch_idx, (data, data_path) in enumerate(all_loader):
+def dump_dataset(loader, deep_feats, color_feats, labels):
+    for batch_idx, (data, data_path) in enumerate(loader):
         data = Variable(data).cuda(GPU_ID)
         deep_feat, color_feat = extractor(data)
         for i in range(len(data_path)):
@@ -38,7 +29,25 @@ def dump():
             labels.append(path)
 
         if batch_idx % LOG_INTERVAL == 0:
-            print("{} / {}".format(batch_idx * EXTRACT_BATCH_SIZE, len(all_loader.dataset)))
+            print("{} / {}".format(batch_idx * EXTRACT_BATCH_SIZE, len(loader.dataset)))
+
+
+def dump():
+    all_loader = torch.utils.data.DataLoader(
+        Fashion_attr_prediction(type="all", transform=data_transform_test),
+        batch_size=EXTRACT_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
+    )
+    deep_feats = []
+    color_feats = []
+    labels = []
+    dump_dataset(all_loader, deep_feats, color_feats, labels)
+
+    if ENABLE_INSHOP_DATASET:
+        inshop_loader = torch.utils.data.DataLoader(
+            Fashion_inshop(type="all", transform=data_transform_test),
+            batch_size=EXTRACT_BATCH_SIZE, num_workers=NUM_WORKERS, pin_memory=True
+        )
+        dump_dataset(inshop_loader, deep_feats, color_feats, labels)
 
     feat_all = os.path.join(DATASET_BASE, 'all_feat.npy')
     color_feat_all = os.path.join(DATASET_BASE, 'all_color_feat.npy')
