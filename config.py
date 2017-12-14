@@ -27,6 +27,6 @@ N_CLUSTERS = 50
 COLOR_TOP_N = 10
 TRIPLET_WEIGHT = 2.0
 ENABLE_TRIPLET_WITH_COSINE = False  # Buggy when backward...
-COLOR_WEIGHT = 0.3
+COLOR_WEIGHT = 0.1
 DISTANCE_METRIC = ('euclidean', 'euclidean')
 FREEZE_PARAM = False
