@@ -19,6 +19,8 @@ Simple image retrieval algorithm on [deep-fashion dataset](http://mmlab.ie.cuhk.
 
 The models will be saved to `DATASET_BASE/models`.
 
+My model: [Download from Google Drive](https://drive.google.com/file/d/1YNH5juwkwewXy3kF9KKQyAi7F7FkuxX7/view?usp=sharing)
+
 Deep Feature: ResNet50 - (Linear 1024 to 512) - (Linear 512 to 20), the 512-dim vector is regarded as images' identical features.
 
 Loss: CrossEntropyLoss + TripletMarginLoss * Weight
